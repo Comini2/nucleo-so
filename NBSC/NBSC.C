@@ -1,4 +1,4 @@
-#include "NBSC.H"
+#include "c:\nucleo\nbsc\NBSC.H"
 #include <string.h>
 
 typedef struct desc_p {
