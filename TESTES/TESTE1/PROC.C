@@ -4,7 +4,7 @@
 
 void far processo1() {
     int i;
-    for(i = 0; i<INT_MAX; i++){
+    for(i = 0; i<10; i++){
         printf("Processo 1\n");
     }
     termina_processo();
@@ -12,7 +12,7 @@ void far processo1() {
 
 void far processo2() {
    int i;
-    for(i = 0; i<INT_MAX; i++){
+    for(i = 0; i<10; i++){
         printf("Processo 2\n");
     }
     termina_processo();

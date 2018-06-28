@@ -59,14 +59,6 @@ PTR_DESC_PROC far procura_prox_ativo(){
     static int prior_atual = MAX_PRIOR - 1;
     PTR_DESC_PROC temp = proc_atual->prox_desc;
     if(temp == NULL){
-        if(prior_atual < 0){
-            if(procs_ativos){
-                prior_atual = MAX_PRIOR - 1;
-                proc_atual = fila[prior_atual];
-                return procura_prox_ativo();
-            }
-            return NULL;
-        }
         if(--prior_atual >= 0){
             if(!fila[prior_atual] || fila[prior_atual]->estado == terminado){
                 proc_atual = fila[prior_atual];
@@ -74,9 +66,16 @@ PTR_DESC_PROC far procura_prox_ativo(){
             }
             return fila[prior_atual];
         }
+        if(procs_ativos){
+            prior_atual = MAX_PRIOR - 1;
+            proc_atual = fila[prior_atual];
+            return procura_prox_ativo();
+        }
+        return NULL;
     }
     if(temp->estado == ativo)
         return temp;
+    
     proc_atual = temp;
     return procura_prox_ativo();
 }
@@ -98,6 +97,7 @@ void far volta_dos() {
 	disable();
 	setvect(8, p_est->int_anterior);
 	enable();
+    printf("\nFim de execução!");
 	exit(0);
 }
 
@@ -146,7 +146,7 @@ void far termina_processo(){
     proc_atual->estado = terminado;
     procs_ativos--;
     enable();
-    printf("Processo %s terminado!", proc_atual->nome);
+    printf("\nProcesso %s terminado!", proc_atual->nome);
     while(1);
 }
 
