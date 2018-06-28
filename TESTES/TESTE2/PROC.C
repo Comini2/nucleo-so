@@ -1,53 +1,20 @@
 #include <stdio.h>
-#include <NPRIO.h>
-#define QTDE 0
+#include "C:/NUCLEO/NPRIO/NPRIO.h"
+#include <limits.h>
 
-void far processo0() {
-    int i;
-    for(i = 0; i<QTDE; i++){
-        printf("\nProcesso 0");
-    }
-    termina_processo();
-}
-
-void far processo1() {
-   int i;
-    for(i = 0; i<QTDE; i++){
-        printf("\nProcesso 1");
-    }
-    termina_processo();
-}
-
-void far processo2() {
-    int i;
-    for(i = 0; i<QTDE; i++){
-        printf("\nProcesso 2");
-    }
-    termina_processo();
-}
-
-void far processo3() {
-   int i;
-    for(i = 0; i<QTDE; i++){
-        printf("\nProcesso 3");
-    }
-    termina_processo();
-}
-
-void far processo4() {
-   int i;
-    for(i = 0; i<QTDE; i++){
-        printf("\nProcesso 4");
-    }
+void far processo() {
+    int i, j;
+    for(i = 0; i<INT_MAX; i++)
+        for(j = 0; j<INT_MAX; j++);
     termina_processo();
 }
 
 int main() {
 
-    cria_processo(processo0, "proc0", 0);
-    cria_processo(processo1, "proc1", 1);
-    cria_processo(processo2, "proc2", 2);
-    cria_processo(processo3, "proc3", 3);
-    cria_processo(processo4, "proc4", 0);
+    cria_processo(processo, "proc0", 0);
+    cria_processo(processo, "proc1", 1);
+    cria_processo(processo, "proc2", 2);
+    cria_processo(processo, "proc3", 3);
+    cria_processo(processo, "proc4", 0);
     dispara_sistema();
-}
+}

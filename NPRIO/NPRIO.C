@@ -1,4 +1,4 @@
-#include <NPRIO.h>
+#include "NPRIO.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -9,6 +9,17 @@ typedef struct desc_p {
     struct desc_p *prox_desc;
 } DESCRITOR_PROC;
 
+typedef struct registros {
+	unsigned int bx1, es1;
+} regis;
+
+typedef union k {
+	regis x;
+	char far *y;
+} APONTA_REG_CRIT;
+
+APONTA_REG_CRIT a;
+
 typedef DESCRITOR_PROC *PTR_DESC_PROC;
 
 PTR_DESC_PROC *fila = NULL;
@@ -16,6 +27,12 @@ PTR_DESC_PROC *fila = NULL;
 PTR_DESC_PROC proc_atual = NULL;
 
 PTR_DESC d_esc;
+
+static int procs_ativos = 0;
+
+FILE* saida;
+
+void far imprimeFila();
 
 void far inicializa_fila(){
     int i;
@@ -34,31 +51,34 @@ void far insere_final(PTR_DESC_PROC proc, int prioridade){
         while(temp->prox_desc != NULL)
             temp = temp->prox_desc;
 
-        proc->prox_desc = NULL;
         temp->prox_desc = proc;
     }
-    printf("\nInserindo %s -> fila[%d]\n", proc->nome, prioridade);
-
 }
 
 PTR_DESC_PROC far procura_prox_ativo(){
     static int prior_atual = MAX_PRIOR - 1;
-    PTR_DESC_PROC temp = proc_atual;
-    while(1){
-        temp = temp->prox_desc;
-        if(temp == NULL){
-            if(prior_atual < 0)
-                return NULL;
-            while(--prior_atual > 0 && fila[prior_atual]){
-                if(fila[prior_atual]->estado == ativo)
-                    return fila[prior_atual];
+    PTR_DESC_PROC temp = proc_atual->prox_desc;
+    if(temp == NULL){
+        if(prior_atual < 0){
+            if(procs_ativos){
+                prior_atual = MAX_PRIOR - 1;
                 proc_atual = fila[prior_atual];
                 return procura_prox_ativo();
             }
+            return NULL;
         }
-        if(temp->estado == ativo)
-            return temp;
+        if(--prior_atual >= 0){
+            if(!fila[prior_atual] || fila[prior_atual]->estado == terminado){
+                proc_atual = fila[prior_atual];
+                return procura_prox_ativo();
+            }
+            return fila[prior_atual];
+        }
     }
+    if(temp->estado == ativo)
+        return temp;
+    proc_atual = temp;
+    return procura_prox_ativo();
 }
 
 void far cria_processo(void far (*end_proc)(), char *nome_proc, int prioridade){
@@ -68,8 +88,10 @@ void far cria_processo(void far (*end_proc)(), char *nome_proc, int prioridade){
     strcpy(aux->nome, nome_proc);
     aux->estado = ativo;
     aux->contexto = cria_desc();
+    aux->prox_desc = NULL;
     newprocess(end_proc, aux->contexto);
     insere_final(aux, prioridade);
+    procs_ativos++;
 }
 
 void far volta_dos() {
@@ -83,15 +105,20 @@ void far escalador(){
     p_est->p_origem = d_esc;
     p_est->p_destino = proc_atual->contexto;
     p_est->num_vetor = 8;
+
+    _AH = 0x34;
+	_AL = 0x00;
+	geninterrupt(0x21);
+	a.x.bx1 = _BX;
+	a.x.es1 = _ES;
+
     while(1){
         iotransfer();
         disable();
-        printf("\nProcesso atual: %s", proc_atual->nome);
-        if((proc_atual = procura_prox_ativo()) == NULL){ 
-            printf("\nProcesso não encontrado!");
-            volta_dos();
-        } 
-        p_est->p_destino = proc_atual->contexto;
+        if (*a.y == 0) {
+            if((proc_atual = procura_prox_ativo()) == NULL) volta_dos();
+            p_est->p_destino = proc_atual->contexto;
+        }
         enable();
     }
 }
@@ -104,9 +131,7 @@ void far dispara_sistema(){
         insere_final(fila[i+1], i);
     }
 
-    for(i = 0; i < MAX_PRIOR; i++){
-        printf("Fila %d: %s\t->\t%s\n", i, fila[i]->nome, fila[i]->prox_desc->nome);
-    }
+    imprimeFila();
     
     proc_atual = fila[MAX_PRIOR-1];
 
@@ -119,6 +144,21 @@ void far dispara_sistema(){
 void far termina_processo(){
     disable();
     proc_atual->estado = terminado;
+    procs_ativos--;
     enable();
+    printf("Processo %s terminado!", proc_atual->nome);
     while(1);
-}
+}
+
+void far imprimeFila(){
+    int i;
+    for(i = 0; i < MAX_PRIOR; i++){
+        PTR_DESC_PROC temp = fila[i];
+        printf("Fila %d: ", i);
+        while(temp != NULL){
+            printf("%s -> ", temp->nome);
+            temp = temp->prox_desc;
+        }
+        printf("\n");
+    }
+}

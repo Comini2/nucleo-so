@@ -1,3 +1,3 @@
-PROC.C (../../../tc/system.h ../../../tc/system.obj ../../NPRIO/NPRIO.C ../../NPRIO/NPRIO.H)
-../../../tc/system.obj
-../../NPRIO/NPRIO.obj
+PROC.C (C:/tc/system.h C:/tc/system.obj C:/NUCLEO/NPRIO/NPRIO.c C:/NUCLEO/NPRIO/NPRIO.h)
+C:/tc/system.obj
+C:/NUCLEO/NPRIO/NPRIO.obj

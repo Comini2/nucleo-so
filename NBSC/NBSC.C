@@ -1,4 +1,4 @@
-#include <NBSC.h>
+#include "NBSC.H"
 #include <string.h>
 
 typedef struct desc_p {
@@ -7,6 +7,17 @@ typedef struct desc_p {
     PTR_DESC contexto;
     struct desc_p *prox_desc;
 } DESCRITOR_PROC;
+
+typedef struct registros {
+	unsigned int bx1, es1;
+} regis;
+
+typedef union k {
+	regis x;
+	char far *y;
+} APONTA_REG_CRIT;
+
+APONTA_REG_CRIT a; 
 
 typedef DESCRITOR_PROC *PTR_DESC_PROC;
 
@@ -60,11 +71,20 @@ void far escalador(){
     p_est->p_origem = d_esc;
     p_est->p_destino = prim->contexto;
     p_est->num_vetor = 8;
+
+    _AH = 0x34;
+	_AL = 0x00;
+	geninterrupt(0x21);
+	a.x.bx1 = _BX;
+	a.x.es1 = _ES;
+
     while(1){
         iotransfer();
         disable();
-        if((prim = procura_prox_ativo()) == NULL) volta_dos();
-        p_est->p_destino = prim->contexto;
+        if (*a.y == 0) {
+            if((prim = procura_prox_ativo()) == NULL) volta_dos();
+            p_est->p_destino = prim->contexto;
+        }
         enable();
     }
 }
