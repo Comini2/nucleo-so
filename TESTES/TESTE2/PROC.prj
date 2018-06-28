@@ -1,0 +1,3 @@
+PROC.C (../../../tc/system.h ../../../tc/system.obj ../../NPRIO/NPRIO.C ../../NPRIO/NPRIO.H)
+../../../tc/system.obj
+../../NPRIO/NPRIO.obj

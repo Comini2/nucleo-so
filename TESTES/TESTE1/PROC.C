@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <nucleo.h>
+#include <NBSC.h>
 
 void far processo1() {
     int i;
@@ -22,4 +22,4 @@ int main() {
     cria_processo(processo2, "proc2");
 
     dispara_sistema();
-}
+}

@@ -1,4 +1,4 @@
-#include <nucleo.h>
+#include <NBSC.h>
 #include <string.h>
 
 typedef struct desc_p {
@@ -81,4 +81,4 @@ void far termina_processo(){
     prim->estado = terminado;
     enable();
     while(1);
-}
+}
