@@ -1,3 +1,7 @@
+/*
+NUCLEO DE TROCA DE MENSAGENS
+*/
+
 #include "c:\nucleo\NMSG\NMSG.H"
 #include <string.h>
 
@@ -17,9 +21,12 @@ typedef struct desc_p {
     PTR_DESC contexto;
     struct desc_p *prox_desc;
 
+    /* novos campos da struct */
+
     PTR_MSG fila_msg; /* ponteiro para a fila de msg */
     int tam_fila;   /*tamanho da fila */
     int qtde_msg;   /* quantidade de mensagens */
+
 } DESCRITOR_PROC;
 
 typedef struct registros {
@@ -66,10 +73,15 @@ PTR_DESC_PROC far procura_prox_ativo(){
 }
 
 PTR_MSG far inicializa_fila_msg(int max_tam){
-    /* cria a fila estatica */
+
+    /* NOVA FUNÇÃO: cria a fila estatica */
+    /* função para criar da fila de mensagem para cada processo novo */
+    /* essa função será chamada dentro da cria_processo */
+    /* deve retornar o começo da fila */
     int i;
     PTR_MSG inicio, aux, aux2;
 
+    /* ternario para saber se o numero maximo de mensagens fora alcançado */
     max_tam = max_tam > 10 ? max_tam = 10 : max_tam;
 
     inicio = (PTR_MSG)malloc(sizeof(mensagem));
@@ -97,7 +109,13 @@ void far volta_dos() {
 }
 
 void far cria_processo(void far (*end_proc)(), char *nome_proc, int max_tam){
+    /*
 
+    cria processo também será alterada.
+    deve-se preencher os novos campos (fila_msg, qtde_msg,tam_fila)
+    é necessário informar um novo parâmetro: max_tam = número máx. de msgs
+
+    */
     PTR_DESC_PROC aux = (PTR_DESC_PROC)malloc(sizeof(DESCRITOR_PROC));
 
     strcpy(aux->nome, nome_proc);
@@ -125,6 +143,16 @@ PTR_DESC_PROC far procura_proc(char *nome){
 }
 
 int far envia_msg(char *nome_receptor, char *mensagem){
+    /*
+    NOVA FUNÇÃO: função para enviar uma mensagem de um processo a outro.
+
+    os parametros: nome_receptor: ponteiro para o processo que irá receber a msg;
+    mensagem: mensagem em si.
+
+    o processo que enviar uma mensagem será bloqueado.
+    o processo que receber a mensagem deverá ser desbloqueado (se estiver bloqueado_rec).
+    apos, é necessario atualizar a fila de mensagens => a quantidade de mensagens do receptor é acrescida de 1
+    */
     PTR_DESC_PROC receptor, aux;
     PTR_MSG msg;
 
@@ -164,6 +192,15 @@ int far envia_msg(char *nome_receptor, char *mensagem){
 }
 
 void far recebe_msg(char *nome_emissor, char *mensagem){
+    /*
+    NOVA FUNÇÃO: função para receber uma mensagem.
+
+    se o processo que está sendo executado não tem mensagens a serem lidas:
+        o processo é bloqueado (bloq_rec), procura-se o prox proc ativo e transfere
+
+    o processo emissor é desbloqueado (se necessario) e, então, atualiza-se a fila de msgs
+
+    */
     PTR_DESC_PROC emissor, aux;
     PTR_MSG msg;
 

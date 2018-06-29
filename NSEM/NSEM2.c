@@ -1,3 +1,6 @@
+/*
+NUCLEO SEMAFORO
+*/
 #include "c:\nucleo\NSEM\NSEM2.H"
 #include <string.h>
 

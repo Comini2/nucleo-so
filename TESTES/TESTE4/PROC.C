@@ -1,3 +1,7 @@
+/*
+TESTES PARA O NUCLEO DE TROCA DE MSG
+*/
+
 #include <stdio.h>
 #include "C:/NUCLEO/NMSG/NMSG.h"
 #include <limits.h>
@@ -5,6 +9,9 @@
 void far processo1() {
     int i, status;
     for(i = 0; i<10; i++){
+        /*
+            envio a msg até que o processo "proc2" a receba
+        */
         while((status = envia_msg("proc2", "ola")) != 2){
             if(!status)
                 printf("\nReceptor não existe!");
@@ -22,6 +29,9 @@ void far processo2() {
     char *buffer, *emissor;
 
     for(i = 0; i<10; i++){
+        /*
+        "proc2" irá receber e mostrar
+        */
         recebe_msg(emissor, buffer);
         printf("\nRecebido: \"%s\" do processo %s.", buffer, emissor);
     }
