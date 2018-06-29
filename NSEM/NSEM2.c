@@ -104,7 +104,7 @@ void far v(semaforo *sema){
 	*/
     disable(); /* desativa as interrupções */
     if(sema->q != NULL){
-		/* não há processos bloqueados */
+		/* há processos bloqueados */
         remove_fila_semaforo(sema);
     }
     else{
