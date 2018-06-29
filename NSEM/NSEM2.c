@@ -19,6 +19,11 @@ APONTA_REG_CRIT a;
 /* fim das variaveis globais */
 
 void far inicia_semaforo(semaforo *sema,int n){
+	/*
+	função para iniciar um semaforo.
+	n : número de processos simultaneos
+	q : fila de processos bloqueados
+	*/
     sema->s = n;
     sema->q = NULL;
 }
@@ -48,13 +53,14 @@ void far remove_fila_semaforo(semaforo *sema){
 }
 
 PTR_DESC_PROC far procura_prox_ativo(){
+	/* procura o proximo processo ativo */
     PTR_DESC_PROC temp = prim;
 
     while(1){
         temp = temp->prox_desc;
         if(temp->estado == ativo)
             return temp;
-        if(temp == prim && temp->estado == terminado)
+        if(temp == prim && (temp->estado == terminado || temp->estado == bloqueado))
             return NULL;
     }
 }
@@ -67,37 +73,48 @@ void far volta_dos() {
 }
 
 void far p(semaforo *sema){
+	/* função para a primitiva P */
     PTR_DESC_PROC aux;
 
-    disable();
+    disable(); /* desativa as interrupções */
     if(sema->s > 0) /* processo continua ativo */
-        sema->s--;
+        sema->s--; /* diminui 1 do s, pois um processo entrou na regiao critica */
     else{
         /* bloqueia o processo */
-        insere_fila_q(sema);
-        prim->estado = bloqueado; /* bloequeia o prim */
+        insere_fila_q(sema); /* como o processo deve ser bloqueado, devo inseri-lo na lista de processor bloqueados */
+        prim->estado = bloqueado; /* bloequeia o prim (processo atual) */
         aux = prim;
 
         if((prim = procura_prox_ativo()) == NULL){
+			/* não achou nenhum processo ativo */
             volta_dos();
         }
+		/* transfere para o processo ativo */
         transfer(aux->contexto,prim->contexto);
     }
-    enable();
+    enable(); /* habilita as interrupções */
 }
 
 void far v(semaforo *sema){
-    disable();
+	/*
+	função para a primitiva V
+	*/
+    disable(); /* desativa as interrupções */
     if(sema->q != NULL){
+		/* não há processos bloqueados */
         remove_fila_semaforo(sema);
     }
     else{
+		/* se a lista está vazia, incrementa s, pois será permitido algum processo utilize a regiao */
         sema->s++;
     }
     enable();
 }
 
 void far insere_final(PTR_DESC_PROC proc){
+	/*
+	função para inserir um processo na lista de processos. igual ao nbsc
+	*/
     if(!prim){
         prim = proc;
         prim->prox_desc = proc;
@@ -113,7 +130,16 @@ void far insere_final(PTR_DESC_PROC proc){
 }
 
 void far cria_processo(void far (*end_proc)(), char *nome_proc){
+	/*
+	função para criar um processo.
 
+	essa função está diferente em relação a função do NBSC
+
+	o campo fila_sem da struct deve ser iniciado como NULL
+
+	o campo fila_sem indica a lista de processos a lista de processos bloqueados
+
+	*/
     PTR_DESC_PROC aux = (PTR_DESC_PROC)malloc(sizeof(DESCRITOR_PROC));
 
     strcpy(aux->nome, nome_proc); /* define o nome do processo */

@@ -4,7 +4,7 @@ typedef struct desc_p {
     char nome[35];
     enum{ativo, terminado, bloqueado} estado;
     PTR_DESC contexto;
-
+    /* NOVO */
     struct desc_p *fila_sem;    /* se estiver bloqueado, irá apontar para o proximo da fila de SEMAFOROS */
                                 /* se não estiver bloqueado por semaforo, valera NULL */
 
@@ -13,8 +13,9 @@ typedef struct desc_p {
 
 typedef DESCRITOR_PROC *PTR_DESC_PROC;
 
+/* NOVO */
 typedef struct {
-    int s; /* numero da parte inteira do semaforo */
+    int s; /* numero de processos possiveis para o semaforo */
     PTR_DESC_PROC q; /* a fila dos processor dos semaforos */
 } semaforo;
 
