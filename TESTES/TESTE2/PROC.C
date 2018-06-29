@@ -2,6 +2,8 @@
 #include "C:/NUCLEO/NPRIO/NPRIO.h"
 #include <limits.h>
 
+/* TESTE DE EXECUÇÃO DO NÚCLEO COM FILAS DE PRIORIDADE. */
+
 void far processo0() {
     int i, j;
     for(i = 0; i<INT_MAX; i++)
